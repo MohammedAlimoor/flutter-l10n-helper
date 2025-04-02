@@ -1,0 +1,26 @@
+<idea-plugin>
+    <id>com.alimoor.flutterl10nhelper</id>
+    <name>Flutter L10n Helper</name>
+    <vendor>MohammedAlimoor</vendor>
+    <description>Helps Flutter developers easily internationalize any string literals in their code</description>
+
+<!--    <depends>com.intellij.modules.platform</depends>-->
+<!--  depends android stdio  //-->
+
+<!--    <depends>Dart</depends>-->
+<!--&lt;!&ndash;    <depends>io.flutter</depends>&ndash;&gt;-->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Define your extension points here -->
+    </extensions>
+
+    <actions>
+        <action
+                id="Flutter.L10n.GenerateL10nKey"
+                class="com.alimoor.flutterl10nhelper.GenerateL10nAction"
+                text="Generate L10n Key"
+                description="Generate localization key from string literal">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>

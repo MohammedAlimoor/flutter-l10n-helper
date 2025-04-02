@@ -1,0 +1,11 @@
+<svg
+        width="200"
+        height="200"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2L19 9L12 16L5 9L12 2Z" fill="#02569B"/>
+    <path d="M12 16V22" stroke="#02569B" stroke-width="2" stroke-linecap="round"/>
+    <text x="5" y="20" font-family="Arial" font-size="6" fill="#FFC107">L10n</text>
+    <text x="5" y="15" font-family="Arial" font-size="6" fill="#FFC107">FLT</text>
+</svg>
