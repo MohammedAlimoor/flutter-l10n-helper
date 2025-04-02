@@ -7,7 +7,6 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
-
 import org.json.JSONObject
 import java.io.File
 import java.util.regex.Pattern
@@ -21,28 +20,13 @@ class GenerateL10nAction : AnAction() {
     private val tripleDoubleQuotePattern = Pattern.compile("\"\"\"((?:.|\n)*?)\"\"\"")
 
     override fun update(e: AnActionEvent) {
-
-        val  editor = e.getData(CommonDataKeys.EDITOR);
-        e.getPresentation().setEnabledAndVisible(editor != null && editor.getSelectionModel().hasSelection());
-
-
-//        val editor = e.getData(CommonDataKeys.EDITOR)
-//        val psiFile = e.getData(CommonDataKeys.PSI_FILE)
-//
-//        if (editor == null || psiFile == null) {
-//            e.presentation.isEnabledAndVisible = false
-//            return
-//        }
-//
-//        // Only enable for Dart files
-//        val isDartFile = psiFile.name.endsWith(".dart")
-//        e.presentation.isEnabledAndVisible = isDartFile
+        val editor = e.getData(CommonDataKeys.EDITOR)
+        e.presentation.isEnabledAndVisible = editor != null && editor.selectionModel.hasSelection()
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val editor = e.getData(CommonDataKeys.EDITOR) ?: return
-//        val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
 
         // Get the string at current cursor position
         val stringContent = getStringAtCursor(editor) ?: return
@@ -50,11 +34,14 @@ class GenerateL10nAction : AnAction() {
         // Generate l10n key
         val l10nKey = generateL10nKey(stringContent)
 
-        // Add to ARB file
-        addToArbFile(project, l10nKey, stringContent)
+        // Add to ARB files in lib/l10n/
+        addToAllArbFiles(project, l10nKey, stringContent)
 
         // Replace in code
         replaceStringWithL10n(project, editor, l10nKey)
+
+        // Run flutter pub get
+        runFlutterPubGet(project)
     }
 
     private fun getStringAtCursor(editor: Editor): String? {
@@ -71,8 +58,7 @@ class GenerateL10nAction : AnAction() {
         val offsetInLine = caretOffset - lineStart
 
         // Try to find a string literal at the cursor position
-        for (pattern in listOf(singleQuotePattern, doubleQuotePattern,
-            tripleSingleQuotePattern, tripleDoubleQuotePattern)) {
+        for (pattern in listOf(singleQuotePattern, doubleQuotePattern, tripleSingleQuotePattern, tripleDoubleQuotePattern)) {
             val matcher = pattern.matcher(lineText)
             while (matcher.find()) {
                 // Check if cursor is within this string
@@ -93,13 +79,33 @@ class GenerateL10nAction : AnAction() {
             .trim('_')                        // Trim leading/trailing underscores
     }
 
-    private fun addToArbFile(project: Project, key: String, value: String) {
-        // Find the ARB file
+    private fun addToAllArbFiles(project: Project, key: String, value: String) {
+        // Find the ARB files in the lib/l10n/ directory
         val basePath = project.basePath ?: return
-        val arbFile = File("$basePath/lib/l10n/app_en.arb")
+        val l10nDir = File("$basePath/lib/l10n")
+        if (l10nDir.exists() && l10nDir.isDirectory) {
+            val arbFiles = l10nDir.listFiles { file -> file.extension == "arb" }
+            if (arbFiles.isNullOrEmpty()) {
+                // No ARB files found, create app_en.arb
+                val defaultArbFile = File(l10nDir, "app_en.arb")
+                addToArbFile(project, defaultArbFile, key, value)
+            } else {
+                // Add to all existing ARB files
+                arbFiles.forEach { arbFile ->
+                    addToArbFile(project, arbFile, key, value)
+                }
+            }
+        } else {
+            // Directory does not exist, create it and add app_en.arb
+            l10nDir.mkdirs()
+            val defaultArbFile = File(l10nDir, "app_en.arb")
+            addToArbFile(project, defaultArbFile, key, value)
+        }
+    }
 
+    private fun addToArbFile(project: Project, arbFile: File, key: String, value: String) {
         // Read existing content
-        var jsonObject = if (arbFile.exists()) {
+        val jsonObject = if (arbFile.exists()) {
             JSONObject(arbFile.readText())
         } else {
             JSONObject()
@@ -124,8 +130,7 @@ class GenerateL10nAction : AnAction() {
         val lineText = document.getText(TextRange(lineStart, lineEnd))
 
         // Find the string at cursor position
-        for (pattern in listOf(singleQuotePattern, doubleQuotePattern,
-            tripleSingleQuotePattern, tripleDoubleQuotePattern)) {
+        for (pattern in listOf(singleQuotePattern, doubleQuotePattern, tripleSingleQuotePattern, tripleDoubleQuotePattern)) {
             val matcher = pattern.matcher(lineText)
             while (matcher.find()) {
                 // Check if cursor is within this string
@@ -165,9 +170,25 @@ class GenerateL10nAction : AnAction() {
 
             // Add the import
             WriteCommandAction.runWriteCommandAction(project) {
-                document.insertString(lastImportEnd,
-                    "\nimport 'package:flutter_gen/gen_l10n/app_localizations.dart';\n")
+                document.insertString(lastImportEnd, "\nimport 'package:flutter_gen/gen_l10n/app_localizations.dart';\n")
             }
+        }
+    }
+
+    private fun runFlutterPubGet(project: Project) {
+        val basePath = project.basePath ?: return
+        val processBuilder = ProcessBuilder("flutter", "pub", "get")
+        processBuilder.directory(File(basePath))
+        processBuilder.redirectErrorStream(true)
+
+        try {
+            val process = processBuilder.start()
+            process.inputStream.bufferedReader().use { reader ->
+                reader.lines().forEach { println(it) }
+            }
+            process.waitFor()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }
