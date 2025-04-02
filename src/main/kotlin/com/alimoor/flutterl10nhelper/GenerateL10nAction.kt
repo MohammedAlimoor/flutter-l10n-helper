@@ -7,8 +7,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiFile
+
 import org.json.JSONObject
 import java.io.File
 import java.util.regex.Pattern
@@ -22,23 +21,28 @@ class GenerateL10nAction : AnAction() {
     private val tripleDoubleQuotePattern = Pattern.compile("\"\"\"((?:.|\n)*?)\"\"\"")
 
     override fun update(e: AnActionEvent) {
-        val editor = e.getData(CommonDataKeys.EDITOR)
-        val psiFile = e.getData(CommonDataKeys.PSI_FILE)
 
-        if (editor == null || psiFile == null) {
-            e.presentation.isEnabledAndVisible = false
-            return
-        }
+        val  editor = e.getData(CommonDataKeys.EDITOR);
+        e.getPresentation().setEnabledAndVisible(editor != null && editor.getSelectionModel().hasSelection());
 
-        // Only enable for Dart files
-        val isDartFile = psiFile.name.endsWith(".dart")
-        e.presentation.isEnabledAndVisible = isDartFile
+
+//        val editor = e.getData(CommonDataKeys.EDITOR)
+//        val psiFile = e.getData(CommonDataKeys.PSI_FILE)
+//
+//        if (editor == null || psiFile == null) {
+//            e.presentation.isEnabledAndVisible = false
+//            return
+//        }
+//
+//        // Only enable for Dart files
+//        val isDartFile = psiFile.name.endsWith(".dart")
+//        e.presentation.isEnabledAndVisible = isDartFile
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val editor = e.getData(CommonDataKeys.EDITOR) ?: return
-        val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
+//        val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
 
         // Get the string at current cursor position
         val stringContent = getStringAtCursor(editor) ?: return

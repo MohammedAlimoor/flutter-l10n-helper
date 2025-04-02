@@ -4,14 +4,25 @@
     <vendor>MohammedAlimoor</vendor>
     <description>Helps Flutter developers easily internationalize any string literals in their code</description>
 
+<!--    <depends>com.intellij.modules.json</depends>-->
+<!--    <depends>com.intellij.modules.lang</depends>-->
+<!--    <depends>com.intellij.modules.all</depends>-->
+<!--    &lt;!&ndash;    <depends>com.intellij.modules.java</depends>&ndash;&gt;-->
 <!--    <depends>com.intellij.modules.platform</depends>-->
-<!--  depends android stdio  //-->
-
-<!--    <depends>Dart</depends>-->
+<!--&lt;!&ndash;    <depends>Dart</depends>&ndash;&gt;-->
+<!--    <depends>org.jetbrains.kotlin</depends>-->
 <!--&lt;!&ndash;    <depends>io.flutter</depends>&ndash;&gt;-->
 
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>Dart</depends>
+<!--    <depends>com.intellij.modules.java</depends>-->
+<!--    <depends>com.intellij.modules.androidstudio</depends>-->
+<!--    <depends>com.jetbrains.lang.dart</depends>-->
+<!--    <depends>io.flutter</depends>-->
+
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Define your extension points here -->
+        <!-- Add your extensions here -->
     </extensions>
 
     <actions>
@@ -20,7 +31,11 @@
                 class="com.alimoor.flutterl10nhelper.GenerateL10nAction"
                 text="Generate L10n Key"
                 description="Generate localization key from string literal">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+<!--            <add-to-group group-id="GenerateGroup" anchor="first"/>-->
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt L"/>
+
+
         </action>
     </actions>
 </idea-plugin>

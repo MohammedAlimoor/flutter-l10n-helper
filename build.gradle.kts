@@ -4,8 +4,8 @@ plugins {
     id("org.jetbrains.intellij") version "1.17.4"
 }
 
-group = "com.yourdomain.flutterl10nhelper"
-version = "1.0-SNAPSHOT"
+group = "com.alimoor.flutterl10nhelper"
+version = "1.1"
 
 repositories {
     mavenCentral()
@@ -24,12 +24,19 @@ java {
 
 // Configure Gradle IntelliJ Plugin
 intellij {
-    version.set("2023.3.6") // Use a stable IntelliJ version
-    type.set("IC") // IntelliJ Community Edition
-
+    version.set("2023.2")
+    type.set("IC") // Target IDE Platform
     // No Dart or Flutter dependencies needed!
     plugins.set(listOf(
-        "com.intellij.java"
+        "Dart:232.8660.129",
+
+//        "com.intellij.java"
+        // Dependencies for Android Studio
+        "org.jetbrains.android",
+        "org.jetbrains.kotlin",
+        // Dart and Flutter plugins
+//        "com.jetbrains.lang.dart",
+//        "io.flutter"
     ))
 }
 
@@ -50,8 +57,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("233") // IntelliJ 2023.3+
-        untilBuild.set("241.*") // Up to 2024.1.*
+        sinceBuild.set("210") // IntelliJ 2023.3+
+        untilBuild.set("243.*") // Up to 2024.3.*
     }
 
     signPlugin {
